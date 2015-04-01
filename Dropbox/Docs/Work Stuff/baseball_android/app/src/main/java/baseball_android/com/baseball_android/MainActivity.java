@@ -14,13 +14,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity implements View.OnClickListener {
     public class searchMessage extends BroadcastReceiver {
         // Create Broadcast Receiver to get messages back from Services
         @Override
-        public void onReceive(Context content, Intent intent) {
+        public void onReceive(Context context, Intent intent) {
             // Get Intent action
             String action = intent.getAction();
 
@@ -30,11 +29,34 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 TextView searchResult = (TextView)findViewById(R.id.SearchResults);
                 searchResult.setText(searchRes);
             }
+
+        }
+    }
+
+    public class scrapeMessage extends BroadcastReceiver {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            if(action.equalsIgnoreCase(ScrapeService.SCRAPE_SERVICE)) {
+                TextView playerName = (TextView) findViewById(R.id.SearchResults);
+                String name = playerName.getText().toString();
+
+                EditText sd = (EditText) findViewById(R.id.StartDateField);
+                String startDate = sd.getText().toString();
+
+                EditText ed = (EditText) findViewById(R.id.EndDateField);
+                String endDate = ed.getText().toString();
+
+                String vorpRes = intent.getStringExtra("vorp");
+                TextView vorpResult = (TextView)findViewById(R.id.vorpResult);
+                vorpResult.setText(name.concat(" from ").concat(startDate).concat(" to ").concat(endDate).concat(":").concat("\n").concat("VORP = ").concat(vorpRes));
+            }
         }
     }
 
     // Initialize Broadcast Receiver
     private searchMessage searchReceiver = new MainActivity.searchMessage();
+    private scrapeMessage scrapeReceiver = new MainActivity.scrapeMessage();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +73,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         // Submit button and listener
         Button submit = (Button)findViewById(R.id.submitButton);
         submit.setOnClickListener(this);
+
+        registerReceiver(scrapeReceiver, new IntentFilter(ScrapeService.SCRAPE_SERVICE));
     }
 
     protected void onDestroy() {
@@ -104,7 +128,22 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     // Use onClick for Submit button to calculate VORP and display results
     @Override
     public void onClick (View arg0) {
-        TextView vorpResult = (TextView)findViewById(R.id.vorpResult);
-        vorpResult.setText("Submit Button Clicked.");
+        //TextView vorpResult = (TextView)findViewById(R.id.vorpResult);
+        //vorpResult.setText("Submit Button Clicked.");
+
+        TextView playerName = (TextView) findViewById(R.id.SearchResults);
+        String name = playerName.getText().toString();
+
+        EditText sd = (EditText) findViewById(R.id.StartDateField);
+        String startDate = sd.getText().toString();
+
+        EditText ed = (EditText) findViewById(R.id.EndDateField);
+        String endDate = ed.getText().toString();
+
+        Intent scrapeIntent = new Intent(getApplicationContext(), ScrapeService.class);
+        scrapeIntent.putExtra("name", name);
+        scrapeIntent.putExtra("start date", startDate);
+        scrapeIntent.putExtra("end date", endDate);
+        startService(scrapeIntent);
     }
 }
