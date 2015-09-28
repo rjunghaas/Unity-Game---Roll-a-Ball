@@ -6,10 +6,27 @@ using System.Runtime.InteropServices;
 
 public class MySDK
 {
+	#if UNITY_ANDROID
+	
+	public static void MixpanelInit(string token) {
+		AndroidJavaClass mixpanelClass = new AndroidJavaClass("com.mixpanel.android.mpmetrics.MixpanelAPI");
+		AndroidJavaObject mCurrentActivity = mixpanelClass.GetStatic<AndroidJavaObject> ("currentActivity");
+		AndroidJavaObject mixpanel = mixpanelClass.Call <AndroidJavaObject> ("getInstance", mCurrentActivity, "wordpressapp");
+	}
+	
+	public static void MixpanelTrack(string eventName) {
+		AndroidJavaClass mixpanelClass = new AndroidJavaClass("com.mixpanel.android.mpmetrics.MixpanelAPI");
+		AndroidJavaObject mCurrentActivity = mixpanelClass.GetStatic <AndroidJavaObject> ("currentActivity");
+		AndroidJavaObject mixpanel = mixpanelClass.Call <AndroidJavaObject> ("getInstance", mCurrentActivity, "wordpressapp");
+		mixpanel.Call ("track", eventName);
+	}
+	#endif
+	
+	#if UNITY_IOS
 	// import a single C-function from our plugin
 	[DllImport ("__Internal")]
 	private static extern void mixpanel_init(string token);
-
+	
 	[DllImport ("__Internal")]
 	private static extern void mixpanel_track(string eventName);
 	/*
@@ -25,7 +42,7 @@ public class MySDK
 			mixpanel_init(token);
 		}
 	}
-
+	
 	public static void MixpanelTrack(string eventName) {
 		// it won't work in Editor, so don't run it there
 		if(Application.platform != RuntimePlatform.OSXEditor) {
@@ -33,8 +50,8 @@ public class MySDK
 			mixpanel_track(eventName);
 		}
 	}
-
-/*
+	
+	/*
  * TODO: Get this working with properties
 	public static void MixpanelTrack(string eventName, Dictionary *properties) {
 		// it won't work in Editor, so don't run it there
@@ -57,4 +74,5 @@ public class MySDK
 		}
 	}
 */
+	#endif
 }
