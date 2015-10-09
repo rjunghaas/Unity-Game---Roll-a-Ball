@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 public class MySDK
 {
 	#if UNITY_ANDROID
-	
 	public static void MixpanelInit(string token) {
 		AndroidJavaClass mixpanelClass = new AndroidJavaClass("com.mixpanel.android.mpmetrics.MixpanelAPI");
 		AndroidJavaObject mCurrentActivity = mixpanelClass.GetStatic<AndroidJavaObject> ("currentActivity");
@@ -22,7 +21,7 @@ public class MySDK
 	}
 	#endif
 	
-	#if UNITY_IOS
+	#elif UNITY_IOS
 	// import a single C-function from our plugin
 	[DllImport ("__Internal")]
 	private static extern void mixpanel_init(string token);
@@ -73,6 +72,9 @@ public class MySDK
 			mixpanel_track(event_str, c_properties);
 		}
 	}
-*/
+*/	
+	#else
+	Debug.Log("Unsupported Platform");
+
 	#endif
 }
